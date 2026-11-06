@@ -6,7 +6,9 @@
 /shorts-studio:make why honey never spoils
 ```
 
-![preview frames](docs/preview.png)
+![shorts-studio demo: /shorts-studio:make why honey never spoils](docs/demo.gif)
+
+<sub>Real output: one command, one finished 1080×1920 video. [More frames](docs/preview.png)</sub>
 
 - **No LLM API key.** Claude *is* the scriptwriter, so there's no OpenAI or DeepSeek bill.
 - **Free voice-over:** Microsoft Edge neural voices (300+ voices, 70+ languages, including Arabic), with word-level timing.
