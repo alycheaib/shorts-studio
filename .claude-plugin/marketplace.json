@@ -1,0 +1,8 @@
+{
+  "name": "shorts-studio",
+  "owner": { "name": "Aly Cheaib", "url": "https://github.com/alycheaib" },
+  "metadata": { "description": "Make short-form videos from a topic, inside Claude Code." },
+  "plugins": [
+    { "name": "shorts-studio", "source": "./plugin", "description": "Topic → narrated, subtitled short video (Shorts/Reels/TikTok). Free voices, stock footage, ffmpeg." }
+  ]
+}
