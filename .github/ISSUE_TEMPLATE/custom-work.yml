@@ -1,0 +1,38 @@
+name: "💼 Request custom work / quote · اطلب عرض سعر"
+description: "Integrate these tools into your system, or get a custom/branded version. · ربط هذه الأدوات بنظامك أو نسخة مخصصة"
+title: "[Custom work] "
+labels: ["custom-work"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! I reply within 24 hours with a fixed-price quote. **This issue is public — don't paste passwords, data or confidential details.**
+        شكراً! أرد خلال 24 ساعة بعرض سعر ثابت. **هذه الصفحة عامة — لا تضع كلمات مرور أو بيانات سرية.**
+  - type: dropdown
+    id: type
+    attributes:
+      label: What do you need? · ماذا تحتاج؟
+      options:
+        - Integrate into my HR / payroll / ERP (Odoo, SAP, custom) · ربط بنظام الرواتب أو ERP
+        - Connect Claude / ChatGPT / AI to my company data · ربط الذكاء الاصطناعي ببيانات شركتي
+        - Security / SOC 2 / ISO 27001 / GDPR readiness · جاهزية أمنية وامتثال
+        - Short-video production or a custom video pipeline · إنتاج فيديوهات قصيرة
+        - Branded / white-label version · نسخة بهوية شركتي
+        - Something else · أخرى
+    validations: { required: true }
+  - type: textarea
+    id: details
+    attributes:
+      label: Describe the project · وصف المشروع
+      placeholder: "Company type, country, systems you use, deadline… · نوع الشركة، الدولة، الأنظمة، الموعد"
+    validations: { required: true }
+  - type: dropdown
+    id: budget
+    attributes:
+      label: Budget (USD) · الميزانية
+      options: ["< $500", "$500 – $2,000", "$2,000 – $5,000", "$5,000 +", "Not sure yet · غير محدد"]
+  - type: input
+    id: contact
+    attributes:
+      label: Best way to reach you (optional) · وسيلة التواصل (اختياري)
+      placeholder: "LinkedIn URL or company website · رابط لينكدإن أو موقع الشركة"
