@@ -47,6 +47,31 @@ Videos are saved to `~/Videos/shorts-studio/<date>-<title>/`: `video.mp4`, `voic
 | `list_voices` | browse the Edge neural voices by language and gender |
 | `search_footage` | preview stock clips with author and licence |
 | `doctor` | check ffmpeg, providers and folders |
+| `license_status` / `activate_license` | check or activate Pro |
+| `make_short_videos` | **Pro**: batch-render up to 20 videos with shared defaults |
+
+## ⭐ Pro
+Everything above is free forever, with **no watermark**. Pro is for creators and agencies who post every day under a brand:
+
+| Pro option | What you get |
+|---|---|
+| `brand` | your logo on every frame (position, size, opacity), brand colour, custom font file, "Follow @handle" end card |
+| `hook_title` | a big title card for the first 3 seconds to stop the scroll |
+| `caption_preset` | `pop` (active word grows), `neon` (glow), `bold-box`, `minimal` |
+| `progress_bar` | an animated watch-progress bar in your colour |
+| `extra_aspects` | one request → 9:16 **and** 1:1 / 16:9 from the same cut |
+| `thumbnail` | `cover.jpg` for each format |
+| `make_short_videos` | a week of content in one command |
+
+Ask Claude: *"Make 5 shorts about saving money, with my logo C:\brand\logo.png, colour #00C853, handle @mybrand, hook titles, pop captions, progress bar, in portrait and square."*
+
+| Plan | Price | |
+|---|---|---|
+| **Pro** | **$29 one-time** | 1 person, all Pro options, free updates for v0.x |
+| **Agency** | **$99 one-time** | up to 5 seats, priority feature requests |
+
+**Get it:** [request a license](https://github.com/alycheaib/shorts-studio/issues/new?template=pro-license.yml) and you'll get payment options (card, PayPal, USDT, Wise) and your key within 24 hours. Then tell Claude *"activate my shorts-studio license SS1.…"*, or set `SHORTS_STUDIO_LICENSE`.
+Keys are verified **offline** (Ed25519 signature): no account, no server and no tracking. Your videos never leave your machine.
 
 ## Configuration (all optional)
 | Env var | |
@@ -57,6 +82,7 @@ Videos are saved to `~/Videos/shorts-studio/<date>-<title>/`: `video.mp4`, `voic
 | `SHORTS_OUTPUT_DIR` | default `~/Videos/shorts-studio` |
 | `FFMPEG_PATH` | a custom ffmpeg binary |
 | `SHORTS_FONTS_DIR` | extra fonts for subtitles |
+| `SHORTS_STUDIO_LICENSE` | Pro license key (or use `activate_license`) |
 
 ## How it works
 ```
@@ -70,7 +96,7 @@ topic ──► Claude writes hook-first script + English search terms
 ## Develop
 ```bash
 npm install
-npm test          # 16 tests (the online ones skip without network)
+npm test          # 21 tests (the online ones skip without network)
 npm run build     # bundles plugin/server.mjs
 ```
 

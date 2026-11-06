@@ -15,7 +15,7 @@ const fx = { video: path.join(tmp, 'clip.mp4'), image: path.join(tmp, 'pic.png')
 async function connect(server = 'src/cli.js') {
   const client = new Client({ name: 'test', version: '1.0.0' });
   await client.connect(new StdioClientTransport({ command: process.execPath, args: [path.join(root, server)],
-    env: { ...process.env, SHORTS_OUTPUT_DIR: path.join(tmp, 'out'), SHORTS_CACHE_DIR: path.join(tmp, 'cache') }, stderr: 'pipe' }));
+    env: { ...process.env, SHORTS_STUDIO_LICENSE: '', SHORTS_STUDIO_LICENSE_FILE: path.join(tmp, 'license.key'), SHORTS_OUTPUT_DIR: path.join(tmp, 'out'), SHORTS_CACHE_DIR: path.join(tmp, 'cache') }, stderr: 'pipe' }));
   return client;
 }
 const call = async (c, name, args = {}) => {
@@ -40,7 +40,7 @@ for (const server of servers) {
   test(`[${server}] lists tools and passes doctor`, async () => {
     const c = await connect(server);
     const { tools } = await c.listTools();
-    assert.deepEqual(tools.map((t) => t.name).sort(), ['doctor', 'generate_voiceover', 'list_voices', 'make_short_video', 'search_footage']);
+    assert.deepEqual(tools.map((t) => t.name).sort(), ['activate_license', 'doctor', 'generate_voiceover', 'license_status', 'list_voices', 'make_short_video', 'make_short_videos', 'search_footage']);
     const d = await call(c, 'doctor');
     assert.ok(!String(d.ffmpeg).startsWith('MISSING'), d.ffmpeg);
     assert.ok(d.providers.includes('wikimedia'));

@@ -1,6 +1,6 @@
 {
   "name": "shorts-studio-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a topic into a narrated short video (TikTok/Reels/Shorts) from inside Claude: script by Claude, free Edge TTS voiceover, stock footage, burned-in subtitles, ffmpeg render. Inspired by MoneyPrinterTurbo (MIT).",
   "type": "module",
   "bin": {

@@ -85,19 +85,38 @@ export function assInline(hex) { return assColor(hex).replace(/^&H00/, '&H') + '
 
 const escAss = (s) => s.replace(/\\/g, '\\\\').replace(/\{/g, '(').replace(/\}/g, ')').replace(/\r?\n/g, ' ');
 
+/** Pro caption presets. Each one only changes defaults; explicit options still win. */
+export const CAPTION_PRESETS = ['pop', 'neon', 'bold-box', 'minimal'];
+
 /**
  * style: "highlight" (current word coloured, viral-shorts look) or "classic" (plain line).
  * position: bottom | center | top.
+ * Pro: preset (pop | neon | bold-box | minimal), accentColor (brand colour),
+ *      hook {text, start, end} (big title card at the top), cta {text, start, end} (end card in the centre).
  */
-export function toAss(captions, {
-  width, height, font = 'Arial', fontSize, color = '#FFFFFF', highlightColor = '#FFD400',
-  outlineColor = '#000000', outline, position = 'bottom', style = 'highlight', uppercase = false, box = false,
-}) {
-  const size = fontSize || Math.round(Math.min(width, height) * (height > width ? 0.078 : 0.062));
+export function toAss(captions, opts) {
+  const { preset } = opts;
+  const accent = opts.accentColor || '#FFD400';
+  const presetDefaults = {
+    pop: { style: 'highlight', highlightColor: accent, uppercase: true },
+    neon: { style: 'highlight', highlightColor: '#FFFFFF', color: '#FFFFFF', outlineColor: accent },
+    'bold-box': { style: 'highlight', box: true, uppercase: true, highlightColor: accent },
+    minimal: { style: 'classic', outline: 0, sizeFactor: 0.8 },
+  }[preset] || {};
+  const pick = (k, d) => (opts[k] !== undefined && opts[k] !== null ? opts[k] : presetDefaults[k] !== undefined ? presetDefaults[k] : d);
+  const { width, height } = opts;
+  const font = pick('font', 'Arial'), color = pick('color', '#FFFFFF'), highlightColor = pick('highlightColor', '#FFD400');
+  const outlineColor = pick('outlineColor', '#000000'), position = pick('position', 'bottom'), style = pick('style', 'highlight');
+  const uppercase = pick('uppercase', false), box = pick('box', false);
+  const size = opts.fontSize || Math.round(Math.min(width, height) * (height > width ? 0.078 : 0.062) * (presetDefaults.sizeFactor || 1));
   const align = { bottom: 2, center: 5, top: 8 }[position] ?? 2;
   const marginV = position === 'center' ? 0 : Math.round(height * (height > width ? 0.2 : 0.08));
-  const ol = outline ?? Math.max(2, Math.round(size / 14));
+  const ol = pick('outline', undefined) ?? Math.max(2, Math.round(size / 14));
   const borderStyle = box ? 3 : 1;
+  const shadow = box ? 0 : preset === 'minimal' ? 2 : Math.round(ol / 2);
+  const mL = Math.round(width * 0.08);
+  const hookSize = Math.round(size * 1.05);
+  const ctaSize = Math.round(size * 1.15);
   const header = `[Script Info]
 ScriptType: v4.00+
 PlayResX: ${width}
@@ -107,18 +126,23 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,${font},${size},${assColor(color)},${assColor(highlightColor)},${assColor(outlineColor)},${assColor('#000000', 0x60)},-1,0,0,0,100,100,0,0,${borderStyle},${ol},${box ? 0 : Math.round(ol / 2)},${align},${Math.round(width * 0.08)},${Math.round(width * 0.08)},${marginV},1
+Style: Default,${font},${size},${assColor(color)},${assColor(highlightColor)},${assColor(outlineColor)},${assColor('#000000', 0x60)},-1,0,0,0,100,100,0,0,${borderStyle},${ol},${shadow},${align},${mL},${mL},${marginV},1
+Style: Hook,${font},${hookSize},${assColor('#FFFFFF')},${assColor('#FFFFFF')},${assColor(accent)},${assColor('#000000', 0x80)},-1,0,0,0,100,100,0,0,3,${Math.round(hookSize / 3)},0,8,${mL},${mL},${Math.round(height * (height > width ? 0.11 : 0.07))},1
+Style: CTA,${font},${ctaSize},${assColor('#FFFFFF')},${assColor('#FFFFFF')},${assColor(accent)},${assColor('#000000', 0x80)},-1,0,0,0,100,100,0,0,3,${Math.round(ctaSize / 3)},0,5,${mL},${mL},0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
-  const hl = `{\\c${assInline(highlightColor)}}`;
-  const reset = `{\\c${assInline(color)}}`;
+  const pop = preset === 'pop';
+  const hl = `{\\c${assInline(highlightColor)}${pop ? '\\fscx118\\fscy118' : ''}}`;
+  const reset = `{\\c${assInline(color)}${pop ? '\\fscx100\\fscy100' : ''}}`;
+  const lead = preset === 'neon' ? `{\\blur${Math.max(2, Math.round(ol / 2))}}` : '';
   const fmt = (t) => escAss(uppercase ? t.toUpperCase() : t);
   const lines = [];
+
   for (const c of captions) {
     if (style !== 'highlight' || !c.words?.length) {
-      lines.push(`Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Default,,0,0,0,,${fmt(c.text)}`);
+      lines.push(`Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Default,,0,0,0,,${lead}${fmt(c.text)}`);
       continue;
     }
     c.words.forEach((w, i) => {
@@ -126,8 +150,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
       const end = i === c.words.length - 1 ? c.end : c.words[i + 1].start;
       if (end <= start) return;
       const text = c.words.map((x, j) => (j === i ? `${hl}${fmt(x.text)}${reset}` : fmt(x.text))).join(' ');
-      lines.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Default,,0,0,0,,${text}`);
+      lines.push(`Dialogue: 0,${assTime(start)},${assTime(end)},Default,,0,0,0,,${lead}${text}`);
     });
   }
+  const card = (st, c) => c?.text && lines.push(`Dialogue: 1,${assTime(c.start ?? 0)},${assTime(c.end)},${st},,0,0,0,,{\\fad(150,250)}${escAss(String(c.text)).replace(/\s*\|\s*/g, '\\N')}`);
+  card('Hook', opts.hook);
+  card('CTA', opts.cta);
   return header + lines.join('\n') + '\n';
 }

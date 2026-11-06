@@ -1,0 +1,37 @@
+name: "⭐ Get shorts-studio Pro · احصل على النسخة الاحترافية"
+description: "Request a Pro ($29) or Agency ($99) license key. · اطلب مفتاح ترخيص"
+title: "[Pro license] "
+labels: ["pro-license"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for supporting shorts-studio! I'll reply within 24 hours with payment options (card, PayPal, USDT or Wise). Your key is sent **privately**, never in this issue.
+        **This issue is public, so don't post your email, phone number or payment details here.** I'll give you a private way to share them.
+        شكراً لدعمك! أرد خلال 24 ساعة بطرق الدفع، والمفتاح يُرسل بشكل خاص. **لا تضع بريدك أو بيانات الدفع هنا.**
+  - type: dropdown
+    id: plan
+    attributes:
+      label: Plan · الخطة
+      options:
+        - Pro, $29 one-time (1 person)
+        - Agency, $99 one-time (up to 5 seats)
+    validations: { required: true }
+  - type: input
+    id: name
+    attributes:
+      label: Name or company to show on the license · الاسم على الترخيص
+    validations: { required: true }
+  - type: dropdown
+    id: pay
+    attributes:
+      label: Preferred payment · طريقة الدفع المفضلة
+      options:
+        - Card / PayPal
+        - USDT (TRC20)
+        - Wise / bank transfer
+        - Other
+  - type: textarea
+    id: use
+    attributes:
+      label: What will you make? (optional) · ماذا ستصنع؟

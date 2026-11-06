@@ -36,7 +36,7 @@ async function detectCrop(file, start, width, height) {
   if (!width || !height) return null;
   const log = await ffmpeg(['-ss', String(start), '-i', file, '-t', '2', '-vf', 'cropdetect=limit=24:round=2:reset=0', '-an', '-f', 'null', '-'])
     .catch(() => '');
-  const all = [...log.matchAll(/crop=(d+):(d+):(d+):(d+)/g)];
+  const all = [...log.matchAll(/crop=(\d+):(\d+):(\d+):(\d+)/g)];
   if (!all.length) return null;
   const [, w, h, x, y] = all.at(-1).map(Number);
   if (w < width * 0.3 || h < height * 0.3) return null; // mostly black frame, don't trust it
@@ -69,7 +69,8 @@ async function renderSegment(seg, out, W, H, idx) {
  */
 export async function renderVideo(opts) {
   const { audioPath, outPath, width: W, height: H, workDir, clipDuration = 4, order = 'sequential',
-    assPath, bgmPath, bgmVolume = 0.15, onProgress = () => {} } = opts;
+    assPath, bgmPath, bgmVolume = 0.15, onProgress = () => {}, fontsDir = process.env.SHORTS_FONTS_DIR,
+    logo = null, progressBar = null, segments: presetSegs = null } = opts;
   fs.mkdirSync(workDir, { recursive: true });
   const audio = await probe(audioPath);
   if (!audio.duration) throw new Error('Could not read the voice-over duration');
@@ -82,7 +83,9 @@ export async function renderVideo(opts) {
     materials.push({ ...m, isImage: info.isImage || IMAGE_EXT.test(m.file), mediaDuration: info.duration, width0: info.width, height0: info.height });
   }
   if (!materials.length) throw new Error('None of the materials could be opened');
-  const segs = planSegments(materials, total, clipDuration, { order });
+  // Re-renders in another aspect reuse the same cut list so every format tells the same story.
+  const segs = presetSegs?.length ? presetSegs.map((s) => ({ ...materials.find((m) => m.file === s.file), ...s }))
+    : planSegments(materials, total, clipDuration, { order });
   const segFiles = [];
   for (let i = 0; i < segs.length; i++) {
     const f = path.join(workDir, `seg-${String(i).padStart(3, '0')}.mp4`);
@@ -98,17 +101,40 @@ export async function renderVideo(opts) {
   onProgress('mixing audio and burning subtitles');
   const args = ['-i', 'body.mp4', '-i', audioPath];
   if (bgmPath) args.push('-stream_loop', '-1', '-i', bgmPath);
+  let logoIdx = -1;
+  if (logo?.file) { logoIdx = bgmPath ? 3 : 2; args.push('-i', logo.file); }
   const vf = [];
+  let cur = '0:v', n = 0;
+  const next = () => `v${++n}`;
   if (assPath) {
     fs.copyFileSync(assPath, path.join(workDir, 'subs.ass'));
-    const fontsDir = process.env.SHORTS_FONTS_DIR;
-    vf.push(`[0:v]subtitles=subs.ass${fontsDir ? `:fontsdir='${fontsDir.replace(/\\/g, '/').replace(/:/g, '\\:')}'` : ''}[v]`);
+    const o = next();
+    vf.push(`[${cur}]subtitles=subs.ass${fontsDir ? `:fontsdir='${fontsDir.replace(/\\/g, '/').replace(/:/g, '\\:')}'` : ''}[${o}]`);
+    cur = o;
+  }
+  if (logoIdx >= 0) {
+    const m = Math.round(Math.min(W, H) * 0.04);
+    const lw = Math.max(16, Math.round(W * (logo.scale ?? 0.18)) & ~1);
+    const pos = { 'top-right': [`W-w-${m}`, `${m}`], 'top-left': [`${m}`, `${m}`], 'bottom-right': [`W-w-${m}`, `H-h-${m}`],
+      'bottom-left': [`${m}`, `H-h-${m}`], center: ['(W-w)/2', '(H-h)/2'] }[logo.position || 'top-right'] || [`W-w-${m}`, `${m}`];
+    const o = next();
+    vf.push(`[${logoIdx}:v]format=rgba,scale=${lw}:-1,colorchannelmixer=aa=${logo.opacity ?? 0.9}[lg]`,
+      `[${cur}][lg]overlay=x=${pos[0]}:y=${pos[1]}:format=auto[${o}]`);
+    cur = o;
+  }
+  if (progressBar) {
+    const bh = Math.max(4, Math.round(H * (progressBar.height ?? 0.008)));
+    const hex = (progressBar.color || '#FFD400').replace('#', '0x');
+    const o = next();
+    vf.push(`color=c=${hex}:s=${W}x${bh}:r=${FPS}[pb]`,
+      `[${cur}][pb]overlay=x='-w+w*t/${total.toFixed(3)}':y=${progressBar.position === 'top' ? 0 : `H-${bh}`}:shortest=1[${o}]`);
+    cur = o;
   }
   const af = bgmPath
     ? `[1:a]aresample=48000,volume=1.0[a1];[2:a]aresample=48000,volume=${bgmVolume},afade=t=out:st=${Math.max(0, total - 1.5).toFixed(2)}:d=1.5[a2];[a1][a2]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]`
     : `[1:a]aresample=48000,apad[a]`;
   const filter = [...vf, af].join(';');
-  args.push('-filter_complex', filter, '-map', assPath ? '[v]' : '0:v', '-map', '[a]',
+  args.push('-filter_complex', filter, '-map', vf.length ? `[${cur}]` : '0:v', '-map', '[a]',
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', '-pix_fmt', 'yuv420p', '-r', String(FPS),
     '-c:a', 'aac', '-b:a', '160k', '-t', total.toFixed(3), '-movflags', '+faststart', 'final.mp4');
   await ffmpeg(args, { cwd: workDir });
@@ -117,5 +143,12 @@ export async function renderVideo(opts) {
   for (const f of [...segFiles, list, body, path.join(workDir, 'subs.ass')]) fs.rmSync(f, { force: true });
   const info = await probe(outPath);
   return { path: outPath, duration: info.duration, width: info.width, height: info.height, segments: segs.length,
-    sizeMB: +(fs.statSync(outPath).size / 1e6).toFixed(2), used_files: [...new Set(segs.map((s) => s.file))] };
+    sizeMB: +(fs.statSync(outPath).size / 1e6).toFixed(2), used_files: [...new Set(segs.map((s) => s.file))],
+    plan: segs.map(({ file, start, duration, loop }) => ({ file, start, duration, loop })) };
+}
+
+/** Grab a still for the cover (Pro). */
+export async function thumbnail(videoPath, outJpg, at = 1.2) {
+  await ffmpeg(['-ss', String(at), '-i', videoPath, '-frames:v', '1', '-q:v', '2', outJpg]);
+  return outJpg;
 }

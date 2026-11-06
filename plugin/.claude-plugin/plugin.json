@@ -1,6 +1,6 @@
 {
   "name": "shorts-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Topic → narrated, subtitled short video (TikTok/Reels/Shorts) inside Claude. Claude writes the script; free Edge neural voices, stock footage (Pexels/Pixabay/Wikimedia), word-highlight subtitles and ffmpeg rendering. Inspired by MoneyPrinterTurbo.",
   "author": { "name": "Aly Cheaib", "url": "https://github.com/alycheaib" },
   "license": "MIT",
