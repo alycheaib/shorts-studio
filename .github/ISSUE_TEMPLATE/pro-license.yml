@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for supporting shorts-studio! I'll reply within 24 hours with payment options (card, PayPal, USDT or Wise). Your key is sent **privately**, never in this issue.
+        Thanks for supporting shorts-studio! Pay **29 / 99 USDT on TRON (TRC20)** to `TQNuYTDhRAFN4Tr88hzyGBKBxXyjHEY1rL`, then email aly.cheaib@gmail.com with the transaction hash. Your key is emailed back **automatically**.
         **This issue is public, so don't post your email, phone number or payment details here.** I'll give you a private way to share them.
         شكراً لدعمك! أرد خلال 24 ساعة بطرق الدفع، والمفتاح يُرسل بشكل خاص. **لا تضع بريدك أو بيانات الدفع هنا.**
   - type: dropdown
@@ -17,6 +17,11 @@ body:
         - Pro, $29 one-time (1 person)
         - Agency, $99 one-time (up to 5 seats)
     validations: { required: true }
+  - type: input
+    id: tx
+    attributes:
+      label: USDT transaction hash · رقم العملية
+      placeholder: "64 characters, from your wallet or exchange withdrawal history"
   - type: input
     id: name
     attributes:

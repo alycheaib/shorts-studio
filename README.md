@@ -70,7 +70,24 @@ Ask Claude: *"Make 5 shorts about saving money, with my logo C:\brand\logo.png, 
 | **Pro** | **$29 one-time** | 1 person, all Pro options, free updates for v0.x |
 | **Agency** | **$99 one-time** | up to 5 seats, priority feature requests |
 
-**Get it:** [request a license](https://github.com/alycheaib/shorts-studio/issues/new?template=pro-license.yml) and you'll get payment options (card, PayPal, USDT, Wise) and your key within 24 hours. Then tell Claude *"activate my shorts-studio license SS1.…"*, or set `SHORTS_STUDIO_LICENSE`.
+<!-- checkout:start -->
+**Get it with USDT (instant, worldwide):**
+
+| | |
+|---|---|
+| Network | **TRON (TRC20)** only. Other networks lose the funds |
+| Address | `TQNuYTDhRAFN4Tr88hzyGBKBxXyjHEY1rL` |
+| Amount | **29 USDT** Pro · **99 USDT** Agency |
+
+<img src="docs/usdt-trc20.png" width="180" alt="USDT TRC20 QR code">
+
+1. Send the amount from any wallet or exchange (Binance, OKX, Bybit, Trust Wallet…). If the exchange deducts a fee, add it so ≥ 28 USDT arrives. Sending from Binance? Choose the TRC20 network withdrawal (not "internal transfer"/Binance Pay) so there is an on-chain hash.
+2. Email **aly.cheaib@gmail.com** with the subject **shorts-studio key**: paste the **transaction hash** and the name for the license.
+3. Your key is emailed back **automatically**, usually within 2 hours, once the payment is confirmed on-chain.
+4. Tell Claude *"activate my shorts-studio license SS1.…"*, or set `SHORTS_STUDIO_LICENSE`.
+
+Lebanon: you can also pay by Whish. Email first and you'll get the details.
+<!-- checkout:end -->
 Keys are verified **offline** (Ed25519 signature): no account, no server and no tracking. Your videos never leave your machine.
 
 ## Configuration (all optional)
